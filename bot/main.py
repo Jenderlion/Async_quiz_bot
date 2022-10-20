@@ -10,17 +10,12 @@ Start this script only through start.sh or start.cmd
 
 import logging
 import os
-import json
-import asyncio
-import datetime
-import traceback
-
-import uvicorn
-from fastapi import FastAPI
 
 from aiogram.utils import executor
-from aiogram import Bot, Dispatcher, types
+from aiogram import Bot, Dispatcher
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+from aiogram.contrib.middlewares.logging import LoggingMiddleware
+from aiogram.utils.executor import start_webhook
 
 from filters import register_all_filters
 from handlers import register_all_handlers
@@ -35,10 +30,6 @@ from database.methods.select import get_expired_bans
 from database.methods.other import unban_user
 
 from apscheduler.schedulers.asyncio import AsyncIOScheduler
-
-
-# create app
-app = FastAPI()
 
 
 # globals
@@ -61,27 +52,9 @@ load_local_vars(path)
 tg_bot = Bot(token=os.environ.get("bot_token"), parse_mode='HTML')
 BotInstanceContainer(tg_bot)  # save Bot instance in data-class
 dp = Dispatcher(tg_bot, storage=MemoryStorage())
+dp.middleware.setup(LoggingMiddleware())
 __host = os.environ['local_bot_host']  # for webhook
 __port = os.environ['local_bot_port']  # for webhook
-
-
-# app funcs
-@app.on_event('startup')
-async def app_startup():
-    print('startup app')
-
-    webhook_info = await tg_bot.get_webhook_info()
-    print(webhook_info)
-
-
-@app.post('/bot/gum')
-async def __set__webhook(update: dict):
-    print('post app')
-
-    __update = types.Update(**update)
-    __json = json.dumps(update, indent=4)
-    print(json)
-    await dp.process_update(__update)
 
 
 # bot funcs
@@ -124,25 +97,15 @@ if __name__ == '__main__':
 
     if console_args.webhook:
         print('IN DEVELOPMENT!!!')
-        uvicorn.run('main:app', host=__host, port=int(__port), reload=True)
+        start_webhook(
+            dispatcher=dp,
+            webhook_path='/bot/gum',
+            on_startup=__on_start_up,
+            on_shutdown=__on_shut_down,
+            skip_updates=True,
+            host=__host,
+            port=__port,
+        )
     else:
         logger.warning('Bot start in Long polling mode.')
         executor.start_polling(dp, skip_updates=True, on_startup=__on_start_up, on_shutdown=__on_shut_down)
-
-else:
-
-    async def _start():
-        await app_startup()
-
-    async def set_wh():
-        await tg_bot.set_webhook(__host)
-
-    executor.start_webhook(
-        dispatcher=dp,
-        webhook_path='/bot/gum',
-        on_startup=__on_start_up,
-        on_shutdown=__on_shut_down,
-        skip_updates=True,
-        host=__host,
-        port=__port,
-    )
