@@ -59,6 +59,7 @@ __port = os.environ['local_bot_port']  # for webhook
 
 # bot funcs
 async def __on_start_up(disp: Dispatcher) -> None:
+    await tg_bot.set_webhook(__host)
     register_all_filters(dp)
     register_all_handlers(dp)
 
