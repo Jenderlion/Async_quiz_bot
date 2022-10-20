@@ -70,15 +70,6 @@ __port = os.environ['local_bot_port']  # for webhook
 async def app_startup():
     print('startup app')
 
-    executor.start_webhook(
-        dispatcher=dp,
-        webhook_path='/bot/gum/',
-        on_startup=__on_start_up,
-        on_shutdown=__on_shut_down,
-        skip_updates=True,
-        host=__host,
-        port=__port,
-    )
     webhook_info = await tg_bot.get_webhook_info()
     print(webhook_info)
 
@@ -152,5 +143,15 @@ else:
         await tg_bot.set_webhook(__host)
 
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(_start())
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(_start())
+
+    executor.start_webhook(
+        dispatcher=dp,
+        webhook_path='/bot/gum/',
+        on_startup=__on_start_up,
+        on_shutdown=__on_shut_down,
+        skip_updates=True,
+        host=__host,
+        port=__port,
+    )
