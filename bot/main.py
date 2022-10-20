@@ -60,7 +60,7 @@ __path = '/bot/gum'  # for webhook
 
 # bot funcs
 async def __on_start_up(disp: Dispatcher) -> None:
-    __url = f'http://{__host}{__path}'
+    __url = f'http://{__host}:{__port}{__path}'
     await tg_bot.set_webhook(__host)
     register_all_filters(dp)
     register_all_handlers(dp)
