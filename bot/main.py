@@ -128,10 +128,10 @@ else:
 
     async def set_wh():
         await tg_bot.set_webhook(__host)
-    app_startup()
+    await app_startup()
     executor.start_webhook(
         dispatcher=dp,
-        webhook_path='',
+        webhook_path='/bot/gum/',
         on_startup=__on_start_up,
         on_shutdown=__on_shut_down,
         skip_updates=True,
