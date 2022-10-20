@@ -56,8 +56,36 @@ def callback_group_wrapper(rules: tuple):
             elif user_group in rules:
                 await func(callback)
             else:
+                logger.warning(
+                    f'GROUP EROOR: Callback {callback.data} from @{callback.from_user.username}'
+                    f' ({callback.from_user.id})'
+                )
                 await tg_bot.send_message(
                     callback.from_user.id, 'Вам нельзя пользоваться этим функционалом!', reply_markup=menu_keyboard()
+                )
+
+        return wrapper
+
+    return decorator
+
+
+def documents_group_wrapper(rules: tuple):
+    """Enables or disables the execution of the function depending on the rules passed and save documents."""
+
+    def decorator(func):
+
+        async def wrapper(*args):
+            message: types.Message = args[0]
+            user_group = get_user(message.from_id).group
+            if user_group == 'banned':
+                ban_time = get_bans(message.from_id)[-1].unban_time
+                await message.reply(f'Кажется, вы забанены до {ban_time}')
+            elif user_group in rules:
+                await func(message)
+            else:
+                logger.warning(
+                    f'GROUP EROOR: Document {message.document.file_name} from @{message.from_user.username}'
+                    f' ({message.from_id})'
                 )
 
         return wrapper
@@ -133,6 +161,17 @@ def callback_wrapper(func):
         except Exception as exc:
             logger.error(f'Callback processing error: {exc} \\ {type(exc)}')
         await func(callback_query)
+
+    return wrapper
+
+
+def message_wrapper(func):
+    """/start wrapper"""
+
+    async def wrapper(*args, **kwargs):
+        message: types.Message = args[0]
+        user = get_user(message.from_id)
+        await func(*args, user)
 
     return wrapper
 

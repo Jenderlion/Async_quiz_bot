@@ -1,6 +1,7 @@
 import json
 import datetime
 import logging
+import os
 import traceback
 
 from aiogram import Bot
@@ -11,6 +12,7 @@ logger = logging.getLogger('BSEU Schedule')
 
 class Path:
     """Focused class for save path to script"""
+    root_path = None
 
     def __init__(self, raw_path: str):
         self.os = 'Linux' if raw_path[0] == '/' else 'Windows' if raw_path[0].isalpha() else 'Unknown OS'
@@ -62,6 +64,14 @@ class Path:
         else:
             raise ValueError('You can only take <int> number of directories and files')
 
+    @classmethod
+    def get_root_path(cls):
+        if cls.root_path is None:
+            abs_file_path = os.path.abspath(__file__)
+            current_file_path, filename = os.path.split(abs_file_path)
+            cls.root_path = Path(current_file_path) - 1
+        return cls.root_path
+
 
 class BotTimer:
     """Time filter to blocked spamming"""
@@ -98,3 +108,93 @@ class BotInstanceContainer:
     def __init__(self, bot: Bot = None):
         if 'bot' not in self.__dict__:
             self.bot = bot
+
+
+class PreparedQuestion:
+
+    def __init__(self, input_string: str):
+        __tuple = input_string.split('//\\\\')
+        if len(__tuple) != 2:
+            raise ValueError(
+                f'Нет номера вопроса, текста или вариантов ответа! Строка, вызвавшая ошибку: {input_string}'
+            )
+        __info, __answers = __tuple
+        self.answers = __answers.split('/\\')
+        __relations_number, __text, *trash = __info.split('. ')
+        if trash:
+            raise ValueError(
+                f'В описании вопроса (слева от //\\\\) несколько точек (точка должна быть только после номера)!'
+                f' Строка, вызвавшая ошибку: {input_string}'
+            )
+        self.text = __text
+        if __relations_number.isdigit():
+            self.relations = None
+            self.number = __relations_number
+        else:
+            __start = input_string.find('[{')
+            __end = input_string.find('}]')
+            if __start == -1 or __end == -1:
+                raise ValueError(
+                    f'Некорректно указана зависимость!'
+                    f' Строка, вызвавшая ошибку: {input_string}'
+                )
+            __relations = __relations_number[__start + 2:__end]
+            __number = __relations_number[__end + 2:]
+            if not __number.isdigit():
+                raise ValueError(
+                    f'Номер должен быть числом!'
+                    f' Строка, вызвавшая ошибку: {input_string}'
+                )
+            self.number = __number
+            __relations_tuple = __relations.split(' -> ')
+            if len(__relations_tuple) != 2:
+                raise ValueError(
+                    f'Некорректно указана зависимость!'
+                    f' Строка, вызвавшая ошибку: {input_string}'
+                )
+            __rel_num, __rel_answer = __relations_tuple
+            if not __rel_num.isdigit():
+                raise ValueError(
+                    f'Некорректно указана зависимость: номер вопроса должен быть числом!'
+                    f' Строка, вызвавшая ошибку: {input_string}'
+                )
+            self.relations = __relations
+
+    def __repr__(self):
+        return f'<PreparedQuiz> {self.number}: {self.text} ({", ".join(self.answers)}); {self.relations}'
+
+
+class PreparedQuiz:
+    allowed_encodings = ['cp1251', 'utf-8']
+
+    def __init__(self, quiz_path: Path):
+        with open(str(quiz_path), 'r', encoding='utf-8') as opened_quiz:
+            if opened_quiz.encoding not in self.allowed_encodings:
+                raise UnicodeEncodeError
+            quiz_content = opened_quiz.read().split('\n')
+        if quiz_content[-1] == '':
+            quiz_content.pop(-1)
+
+        if not quiz_content[0][0].isalpha():
+            raise ValueError(
+                f'Имя опроса должно начинаться я буквы! Строка, вызвавшая ошибку: {quiz_content[0]}'
+            )
+        self.name = quiz_content.pop(0)
+
+        if not quiz_content[0][0].isalpha():
+            raise ValueError(
+                f'Описание опроса должно начинаться с буквы! Строка, вызвавшая ошибку: {quiz_content[0]}'
+            )
+        self.title = quiz_content.pop(0)
+
+        if not quiz_content[-1][0].isalpha():
+            raise ValueError(
+                f'Финальное сообщение должно начинаться с буквы! Строка, вызвавшая ошибку: {quiz_content[-1]}'
+            )
+        self.gratitude = quiz_content.pop(-1)
+
+        self.questions = [PreparedQuestion(question) for question in quiz_content]
+
+    def __repr__(self):
+        return f'<PreparedQuiz> Name: {self.name}, title: {self.title}, gratitude: {self.gratitude},' \
+               f' questions amount: {len(self.questions)}'

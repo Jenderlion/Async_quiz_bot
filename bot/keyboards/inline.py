@@ -5,6 +5,7 @@ from functools import cache
 from aiogram.types import InlineKeyboardButton
 from aiogram.types import InlineKeyboardMarkup
 from database.main import User
+from database.main import Quiz
 
 
 def inline_markup_settings(user: User) -> InlineKeyboardMarkup:
@@ -14,8 +15,13 @@ def inline_markup_settings(user: User) -> InlineKeyboardMarkup:
         f'Изменить статус рассылки',
         callback_data=f'settings mailing {"0" if user.mailing else "1"}')
     )
+    if user.quiz_status is not None:
+        keyboard.row(InlineKeyboardButton(
+            f'Принудительно завершить опрос',
+            callback_data='settings quizend')
+        )
     keyboard.row(InlineKeyboardButton(
-        f'Ничего не делать',
+        f'Закрыть настройки',
         callback_data='settings cancel')
     )
 
@@ -52,6 +58,49 @@ def inline_markup_help() -> InlineKeyboardMarkup:
 def inline_markup_credentials(__target_id: int | str) -> InlineKeyboardMarkup:
     keyboard = InlineKeyboardMarkup()
     keyboard.row(InlineKeyboardButton('Send contact information', callback_data=f'help credentials {__target_id}'))
+    return keyboard
+
+
+def inline_markup_quizinfo(quiz: Quiz) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+
+    keyboard.row(
+        InlineKeyboardButton(
+            'Изменить статус',
+            callback_data=f'quizinfo status {quiz.quiz_id} {"0" if quiz.quiz_status else "1"}'
+        )
+    )
+    keyboard.row(
+        InlineKeyboardButton(
+            'Получить аналитику',
+            callback_data=f'quizinfo analytics {quiz.quiz_id}'
+        )
+    )
+    keyboard.row(
+        InlineKeyboardButton(
+            'Ничего не делать',
+            callback_data=f'quizinfo cancel'
+        )
+    )
+    return keyboard
+
+
+def inline_markup_quiz(quiz_list: list[Quiz]) -> InlineKeyboardMarkup:
+    keyboard = InlineKeyboardMarkup()
+
+    for quiz in quiz_list:
+        keyboard.row(
+            InlineKeyboardButton(
+                f'"{quiz.quiz_name}": {quiz.quiz_title}',
+                callback_data=f'quiz start {quiz.quiz_id}'
+            )
+        )
+    keyboard.row(
+        InlineKeyboardButton(
+            f'Ничего не проходить',
+            callback_data=f'quiz cancel'
+        )
+    )
     return keyboard
 
 

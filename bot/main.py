@@ -111,7 +111,7 @@ async def auto_unban():
 def schedule() -> None:
     """Schedule create"""
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(auto_unban, 'interval', seconds=5, )
+    scheduler.add_job(auto_unban, 'interval', seconds=60, )
     scheduler.start()
 
 

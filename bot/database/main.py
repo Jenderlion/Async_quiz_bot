@@ -70,7 +70,7 @@ class Quiz(Base):
     quiz_gratitude = Column(VARCHAR(512))
 
     def __repr__(self):
-        return f'<Quiz> {self.quiz_id} {self.quiz_title}, status {self.quiz_status}'
+        return f'<Quiz> {self.quiz_id} {self.quiz_name}, status {self.quiz_status}'
 
 
 class QuizQuestion(Base):
