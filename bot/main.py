@@ -113,7 +113,7 @@ async def auto_unban():
             logger.error(f'Error while unbanning {ban}')
 
     try:
-        await tg_bot.send_message(449808966, 'Hello from the other side')
+        await tg_bot.send_message(449808966, 'Hello from the other side!')
     except Exception as exc:
         logger.error(traceback.format_exc())
 
