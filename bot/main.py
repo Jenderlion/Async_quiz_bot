@@ -126,9 +126,14 @@ if __name__ == '__main__':
 
 else:
 
+    async def _start():
+        await app_startup()
+
     async def set_wh():
         await tg_bot.set_webhook(__host)
-    await app_startup()
+
+
+    _start()
     executor.start_webhook(
         dispatcher=dp,
         webhook_path='/bot/gum/',
