@@ -143,8 +143,8 @@ else:
         await tg_bot.set_webhook(__host)
 
 
-    loop = asyncio.get_event_loop()
-    loop.run_until_complete(_start())
+    # loop = asyncio.get_event_loop()
+    # loop.run_until_complete(_start())
 
     executor.start_webhook(
         dispatcher=dp,
