@@ -149,7 +149,25 @@ def get_expired_bans() -> list[Ban]:
     return result
 
 
-def get_user_answers(__quiz_id) -> list[QuestionAnswer]:
+def get_user_answers(__user_id) -> list[QuestionAnswer]:
+
+    __engine = DataBaseEngine().engine
+
+    user = get_user(__user_id)
+
+    with Session(__engine) as __session:
+        __session: ConnectedSession
+        statement: ConnectedSelect = select(QuestionAnswer).where(
+            QuestionAnswer.internal_user_id == user.internal_user_id,
+        )
+        __session.flush()
+        result = __session.scalars(statement).all()
+        __session.expunge_all()
+        __session.commit()
+    return result
+
+
+def get_quiz_answers(__quiz_id) -> list[QuestionAnswer]:
 
     __engine = DataBaseEngine().engine
 
@@ -165,6 +183,40 @@ def get_user_answers(__quiz_id) -> list[QuestionAnswer]:
     return result
 
 
+def get_users_answers_dict(quiz_id):
+
+    __engine = DataBaseEngine().engine
+
+    with Session(__engine) as __session:
+        __session: ConnectedSession
+        statement: ConnectedSelect = select(QuizQuestion).where(QuizQuestion.quiz_id == quiz_id)
+        __session.flush()
+        result = __session.scalars(statement).all()
+        __session.expunge_all()
+        __session.commit()
+    quests_id = frozenset([answer.quest_id for answer in result])
+    questions_info: list[QuizQuestion] = result
+    info_dict = dict()
+    for quest_id in quests_id:
+        quest_id = int(quest_id)
+        try:
+            __question = questions_info[quest_id - 1]
+            question_text = f'{__question.quest_id} - {__question.quest_text}'
+            if question_text not in info_dict.keys():
+                info_dict[question_text] = dict()
+            all_answers = get_quiz_answers(quiz_id)
+            answers = [answer for answer in all_answers if answer.quest_id == quest_id]
+            answers_text = [i.answer for i in answers]
+            for answer in answers_text:
+                if answer not in info_dict[question_text]:
+                    info_dict[question_text][answer] = 0
+                info_dict[question_text][answer] += 1
+        except IndexError:
+            pass
+
+    return info_dict
+
+
 def get_analytical_message(quiz_id) -> str | None:
 
     __engine = DataBaseEngine().engine
@@ -178,15 +230,13 @@ def get_analytical_message(quiz_id) -> str | None:
         __session.commit()
     quests_id = frozenset([question.quest_id for question in res])
     questions_info: list[QuizQuestion] = [question for question in res]
-    all_answers: list[QuestionAnswer] = get_user_answers(quiz_id)
+    all_answers: list[QuestionAnswer] = get_quiz_answers(quiz_id)
     analytical_dict = dict()
 
     for quest_id in quests_id:
         try:
             answers = [answer for answer in all_answers if answer.quest_id == quest_id]
             for answer in answers:
-                print(answer.internal_user_id)
-                print(analytical_dict)
                 if answer.internal_user_id not in analytical_dict:
                     analytical_dict[answer.internal_user_id] = dict()
                 analytical_dict[answer.internal_user_id][answer.quest_id] = answer.answer

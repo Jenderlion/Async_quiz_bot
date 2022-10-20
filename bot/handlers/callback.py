@@ -7,7 +7,7 @@ from misc.custom_types import BotInstanceContainer
 from misc.custom_types import Path
 from database.methods.select import get_users
 from database.methods.select import get_analytical_message
-from database.methods.select import get_user_answers
+from database.methods.select import get_users_answers_dict
 from database.methods.update import update_user_info
 from database.methods.update import update_quiz_info
 from database.methods.other import run_quiz
@@ -123,9 +123,9 @@ async def callback_quizinfo(*args, ** kwargs):
                 if 'temp' not in os.listdir(str(root_path)):
                     os.mkdir(str(root_path + 'temp'))
                 downloads_path = root_path + 'temp'
-                txt_file_name = downloads_path + f'temp_{quiz_id}_{callback.from_user.id}.txt'
-                json_file_name = downloads_path + f'temp_{quiz_id}_{callback.from_user.id}.json'
-                xlsx_file_name = downloads_path + f'temp_{quiz_id}_{callback.from_user.id}.xlsx'
+                txt_file_name = str(downloads_path + f'temp_{quiz_id}_{callback.from_user.id}.txt')
+                json_file_name = str(downloads_path + f'temp_{quiz_id}_{callback.from_user.id}.json')
+                xlsx_file_name = str(downloads_path + f'temp_{quiz_id}_{callback.from_user.id}.xlsx')
 
                 analytical_message = get_analytical_message(quiz_id)
                 if analytical_message is None:
@@ -138,8 +138,9 @@ async def callback_quizinfo(*args, ** kwargs):
 
                 # json
                 quiz_json = json.dumps(
-                    get_user_answers(quiz_id), ensure_ascii=False
+                    get_users_answers_dict(quiz_id), indent=4, ensure_ascii=False
                 )
+
                 with open(json_file_name, 'w', encoding='utf-8') as opened_file:
                     opened_file.write(quiz_json)
 
@@ -148,8 +149,10 @@ async def callback_quizinfo(*args, ** kwargs):
                 json_to_write.to_excel(xlsx_file_name)
 
                 for file_name in (txt_file_name, json_file_name, xlsx_file_name):
-                    with open(json_file_name, 'rb') as opened_file:
+                    with open(file_name, 'rb') as opened_file:
                         await tg_bot.send_document(analyst_id, opened_file)
+
+                logger.debug(f'Send analytics to {callback.from_user.id}')
                 return None
             case 'cancel':
                 return None

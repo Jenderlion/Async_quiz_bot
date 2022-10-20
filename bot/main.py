@@ -40,7 +40,7 @@ app = FastAPI()
 
 
 # globals
-manual_debug = True
+manual_debug = False
 
 console_args = get_console_args()
 if console_args.verbose:
@@ -71,12 +71,12 @@ async def app_startup():
     print(webhook_info)
 
 
-@app.post('')
+@app.post('/bot/gum/')
 async def __set__webhook(update: dict):
     __update = types.Update(**update)
     __json = json.dumps(update, indent=4)
     print(json)
-    pass
+    await dp.process_update(__update)
 
 
 # bot funcs
@@ -118,7 +118,6 @@ def schedule() -> None:
 if __name__ == '__main__':
 
     if console_args.webhook:
-        # todo: webhook server
         print('IN DEVELOPMENT!!!')
         uvicorn.run('main:app', host=__host, port=int(__port), reload=True)
     else:

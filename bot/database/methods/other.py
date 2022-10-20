@@ -69,7 +69,8 @@ async def send_question(user: User, bot):
     question_to_send: QuizQuestion = questions_dict[int(question_id)]
     if question_to_send.quest_relation is not None:
         relation_question_id, relation_answer = question_to_send.quest_relation.split(' -> ')
-        user_answers = get_user_answers(quiz_id)
+        all_user_answers = get_user_answers(user.tg_user_id)
+        user_answers = [answer for answer in all_user_answers if answer.quiz_id == int(quiz_id)]
         answers_dict = {answer.quest_id: answer.answer for answer in user_answers}
         user_answer_to_relation_question = answers_dict[int(relation_question_id)]
 
