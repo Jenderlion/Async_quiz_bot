@@ -98,9 +98,12 @@ async def auto_unban():
     """Separate thread for automated user unbanning"""
     logger.debug('Check bans')
     try:
+        print('send')
         await tg_bot.send_message(449808966, 'Hello from the other side')
+        print('got it')
     except Exception as exc:
-        logger.error(traceback.format_exc())
+        print(traceback.format_exc())
+        logger.error(exc)
     active_ban_list = get_expired_bans()
     for ban in active_ban_list:
         __count = unban_user(ban.tg_id)
