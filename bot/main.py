@@ -68,6 +68,7 @@ __port = os.environ['local_bot_port']  # for webhook
 # app funcs
 @app.on_event('startup')
 async def app_startup():
+    print('startup app')
 
     webhook_info = await tg_bot.get_webhook_info()
     print(webhook_info)
@@ -75,6 +76,8 @@ async def app_startup():
 
 @app.post('/bot/gum/')
 async def __set__webhook(update: dict):
+    print('post app')
+
     __update = types.Update(**update)
     __json = json.dumps(update, indent=4)
     print(json)
@@ -96,14 +99,6 @@ async def __on_shut_down(disp: Dispatcher) -> None:
 
 async def auto_unban():
     """Separate thread for automated user unbanning"""
-    logger.debug('Check bans')
-    try:
-        print('send')
-        await tg_bot.send_message(449808966, 'Hello from the other side')
-        print('got it')
-    except Exception as exc:
-        print(traceback.format_exc())
-        logger.error(exc)
     active_ban_list = get_expired_bans()
     for ban in active_ban_list:
         __count = unban_user(ban.tg_id)
@@ -126,7 +121,7 @@ async def auto_unban():
 def schedule() -> None:
     """Schedule create"""
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(auto_unban, 'interval', seconds=5, )
+    scheduler.add_job(auto_unban, 'interval', seconds=60, )
     scheduler.start()
 
 
