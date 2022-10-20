@@ -136,7 +136,6 @@ else:
 
     loop = asyncio.get_event_loop()
     loop.run_until_complete(_start())
-    loop.close()
 
     executor.start_webhook(
         dispatcher=dp,
