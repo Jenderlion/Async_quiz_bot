@@ -74,7 +74,7 @@ async def app_startup():
     print(webhook_info)
 
 
-@app.post('/bot/gum/')
+@app.post('/bot/gum')
 async def __set__webhook(update: dict):
     print('post app')
 
@@ -112,11 +112,6 @@ async def auto_unban():
         else:
             logger.error(f'Error while unbanning {ban}')
 
-    try:
-        await tg_bot.send_message(449808966, 'Hello from the other side!')
-    except Exception as exc:
-        logger.error(traceback.format_exc())
-
 
 def schedule() -> None:
     """Schedule create"""
@@ -142,13 +137,9 @@ else:
     async def set_wh():
         await tg_bot.set_webhook(__host)
 
-
-    # loop = asyncio.get_event_loop()
-    # loop.run_until_complete(_start())
-
     executor.start_webhook(
         dispatcher=dp,
-        webhook_path='/bot/gum/',
+        webhook_path='/bot/gum',
         on_startup=__on_start_up,
         on_shutdown=__on_shut_down,
         skip_updates=True,
