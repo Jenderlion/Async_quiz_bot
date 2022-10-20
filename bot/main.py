@@ -95,6 +95,7 @@ async def __on_shut_down(disp: Dispatcher) -> None:
 
 async def auto_unban():
     """Separate thread for automated user unbanning"""
+    logger.debug('Check bans')
     active_ban_list = get_expired_bans()
     for ban in active_ban_list:
         __count = unban_user(ban.tg_id)
