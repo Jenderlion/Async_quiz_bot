@@ -13,6 +13,7 @@ import os
 import json
 import asyncio
 import datetime
+import traceback
 
 import uvicorn
 from fastapi import FastAPI
@@ -108,6 +109,11 @@ async def auto_unban():
             logger.debug(f'User {ban.tg_id} was automatically unbanned!')
         else:
             logger.error(f'Error while unbanning {ban}')
+
+    try:
+        await tg_bot.send_message(449808966, 'Hello from the other side')
+    except Exception as exc:
+        logger.error(traceback.format_exc())
 
 
 def schedule() -> None:
