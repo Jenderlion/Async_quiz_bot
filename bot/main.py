@@ -11,6 +11,7 @@ Start this script only through start.sh or start.cmd
 import logging
 import os
 import json
+import asyncio
 import datetime
 
 import uvicorn
@@ -133,7 +134,11 @@ else:
         await tg_bot.set_webhook(__host)
 
 
-    _start()
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(_start())
+    loop.close()
+
+    await _start()
     executor.start_webhook(
         dispatcher=dp,
         webhook_path='/bot/gum/',
