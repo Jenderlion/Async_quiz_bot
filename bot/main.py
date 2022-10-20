@@ -138,7 +138,6 @@ else:
     loop.run_until_complete(_start())
     loop.close()
 
-    await _start()
     executor.start_webhook(
         dispatcher=dp,
         webhook_path='/bot/gum/',
