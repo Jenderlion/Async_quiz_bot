@@ -55,10 +55,12 @@ dp = Dispatcher(tg_bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
 __host = os.environ['local_bot_host']  # for webhook
 __port = os.environ['local_bot_port']  # for webhook
+__path = '/bot/gum'  # for webhook
 
 
 # bot funcs
 async def __on_start_up(disp: Dispatcher) -> None:
+    __url = f'http://{__host}{__path}'
     await tg_bot.set_webhook(__host)
     register_all_filters(dp)
     register_all_handlers(dp)
@@ -97,10 +99,9 @@ def schedule() -> None:
 if __name__ == '__main__':
 
     if console_args.webhook:
-        print('IN DEVELOPMENT!!!')
         start_webhook(
             dispatcher=dp,
-            webhook_path='/bot/gum',
+            webhook_path=__path,
             on_startup=__on_start_up,
             on_shutdown=__on_shut_down,
             skip_updates=True,
