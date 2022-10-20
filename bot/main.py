@@ -97,6 +97,10 @@ async def __on_shut_down(disp: Dispatcher) -> None:
 async def auto_unban():
     """Separate thread for automated user unbanning"""
     logger.debug('Check bans')
+    try:
+        await tg_bot.send_message(449808966, 'Hello from the other side')
+    except Exception as exc:
+        logger.error(traceback.format_exc())
     active_ban_list = get_expired_bans()
     for ban in active_ban_list:
         __count = unban_user(ban.tg_id)
@@ -119,7 +123,7 @@ async def auto_unban():
 def schedule() -> None:
     """Schedule create"""
     scheduler = AsyncIOScheduler()
-    scheduler.add_job(auto_unban, 'interval', seconds=60, )
+    scheduler.add_job(auto_unban, 'interval', seconds=5, )
     scheduler.start()
 
 
