@@ -11,7 +11,8 @@ def load_local_vars(path: Path):
     """Create (if necessary) new .env and load vars from"""
     vars_tuple = (
         'echo_mode',  # sqlite
-        'bot_token', 'local_bot_host', 'local_bot_port',  # telegram bot token, VM address and port
+        'bot_token',  # telegram bot token,
+        'local_bot_host', 'local_bot_port', 'local_bot_url',  # VM address and port and https domain
         'secret_phrase',  # operation secret phrase
     )
     path = path + "bot"

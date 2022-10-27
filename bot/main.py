@@ -53,9 +53,9 @@ tg_bot = Bot(token=os.environ.get("bot_token"), parse_mode='HTML')
 BotInstanceContainer(tg_bot)  # save Bot instance in data-class
 dp = Dispatcher(tg_bot, storage=MemoryStorage())
 dp.middleware.setup(LoggingMiddleware())
-__host = os.environ['local_bot_host']  # for webhook
-__port = os.environ['local_bot_port']  # for webhook
-__path = '/bot/gum'  # for webhook
+__host = os.environ.get('local_bot_host')  # for webhook
+__port = os.environ.get('local_bot_port')  # for webhook
+__path = os.environ.get('local_bot_url')  # for webhook
 
 
 # bot funcs

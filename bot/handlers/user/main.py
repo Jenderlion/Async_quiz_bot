@@ -434,6 +434,14 @@ async def echo(message: aio_types.Message, user: User):
         return None
     __quiz_id, __question_id = user.quiz_status.split(' -> ')
     __answer = message.text
+    __checklist = {'drop', 'truncate', 'update', 'delete', 'create'}
+    common_words = set(__answer.lower().split()) & __checklist
+    if len(common_words) > 0:
+        await message.answer(
+            f'Не стоит применять SQL-инъекции. Пожалуйста, не используйте слова'
+            f' {", ".join(__checklist)} в своём ответе.'
+        )
+        return None
     __user_id = message.from_id
     if __answer == 'Завершить опрос сейчас':
         update_user_info(__user_id, {'quiz_status': None})
